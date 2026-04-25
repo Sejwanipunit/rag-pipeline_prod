@@ -1,5 +1,5 @@
 from app.ingestion.loader import load_documents
-from app.ingestion.chunker import chunk_documents, inspect_chunks
+from app.ingestion.chunking.recursive import chunk_documents, inspect_chunks
 from app.ingestion.embedder import embed_and_store
 
 if __name__ == "__main__":
