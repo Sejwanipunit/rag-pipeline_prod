@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     max_tokens: int = 1024
     
     #Embeddings
-    embeddings_model: str = "sentence-transformers/all-MiniLM-L6-v2"
+    embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     
     #Qdrant
     qdrant_url: str = "http://localhost:6333"
