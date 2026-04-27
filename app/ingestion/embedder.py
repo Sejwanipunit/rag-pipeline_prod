@@ -8,21 +8,24 @@ from qdrant_client.models import Distance, VectorParams
 
 from config import settings
 
-
+_embeddings = None
 def get_embeddings():
     """
     Load the sentence-transformer embedding model.
     all-MiniLM-L6-v2 is small (80MB), fast, and good quality.
     Downloads automatically on first run, cached after that.
     """
+    global _embeddings
+    if _embeddings is not None:
+        return _embeddings
     print("🔍 Loading embedding model...")
-    embeddings = HuggingFaceEmbeddings(
+    _embeddings = HuggingFaceEmbeddings(
         model_name=settings.embedding_model,
         model_kwargs={"device": "cpu"},
         encode_kwargs={"normalize_embeddings": True}
     )
     print("✅ Embedding model loaded")
-    return embeddings
+    return _embeddings
 
 
 def create_collection(client: QdrantClient, collection_name: str):
