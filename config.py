@@ -33,6 +33,9 @@ class Settings(BaseSettings):
     dense_retrieval_k: int = 20
     reranker_top_k: int = 5
     reranker_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    
+    reranker_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    dense_retrieval_k: int = 20
 
 
     class Config:
