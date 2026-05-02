@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Experiment Lab</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 RAG Experiment Lab</h1>
+        <p class="subtitle">Compare chunking and retrieval strategies side by side</p>
+
+        <div class="card">
+            <h2>Configure Experiment</h2>
+            <form id="experimentForm">
+
+                <div class="form-group">
+                    <label>✂️ Chunking Strategy</label>
+                    <div class="radio-group">
+                        {% for value, label in chunking_options %}
+                        <label class="radio-label">
+                            <input type="radio" name="chunking" value="{{ value }}"
+                                {{ 'checked' if value == 'recursive' }}>
+                            {{ label }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>🔍 Retrieval Method</label>
+                    <div class="radio-group">
+                        {% for value, label in retrieval_options %}
+                        <label class="radio-label">
+                            <input type="radio" name="retrieval" value="{{ value }}"
+                                {{ 'checked' if value == 'hybrid' }}>
+                            {{ label }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>❓ Test Queries (one per line)</label>
+                    <textarea name="queries" rows="4" placeholder="What are the types of RAG?
+What are limitations of Naive RAG?
+What is Retrieval Augmented Generation?"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>📦 Chunks to retrieve (k)</label>
+                    <select name="k">
+                        <option value="3">3</option>
+                        <option value="5" selected>5</option>
+                        <option value="10">10</option>
+                    </select>
+                </div>
+
+                <button type="submit" id="runBtn">▶ Run Experiment</button>
+            </form>
+        </div>
+
+        <!-- Results appear here -->
+        <div id="resultsSection" class="card" style="display:none">
+            <h2>📊 Results</h2>
+            <div id="experimentMeta"></div>
+            <div id="queryResults"></div>
+        </div>
+
+        <div class="card">
+            <h2>📈 All Experiments</h2>
+            <a href="/results" class="btn-link">View Comparison Table →</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('experimentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const btn = document.getElementById('runBtn');
+            btn.textContent = '⏳ Running...';
+            btn.disabled = true;
+
+            const formData = new FormData(e.target);
+
+            try {
+                const response = await fetch('/run', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+
+                displayResults(data.result);
+
+            } catch (err) {
+                alert('Something went wrong: ' + err.message);
+            } finally {
+                btn.textContent = '▶ Run Experiment';
+                btn.disabled = false;
+            }
+        });
+
+        function displayResults(result) {
+            const section = document.getElementById('resultsSection');
+            section.style.display = 'block';
+
+            // Meta info
+            document.getElementById('experimentMeta').innerHTML = `
+                <div class="meta-grid">
+                    <div class="meta-item">
+                        <span class="meta-label">Chunking</span>
+                        <span class="meta-value">${result.config.chunking_strategy}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Retrieval</span>
+                        <span class="meta-value">${result.config.retrieval_strategy}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Total Chunks</span>
+                        <span class="meta-value">${result.config.total_chunks}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Avg Latency</span>
+                        <span class="meta-value">${result.performance.avg_query_latency_seconds}s</span>
+                    </div>
+                </div>
+            `;
+
+            // Query results
+            let html = '';
+            result.results.forEach((r, i) => {
+                html += `
+                    <div class="query-result">
+                        <div class="query-header">
+                            <span class="query-num">Q${i+1}</span>
+                            <span class="query-text">${r.query}</span>
+                            <span class="latency">⏱ ${r.latency_seconds}s</span>
+                        </div>
+                        <div class="answer">${r.answer}</div>
+                        <div class="sources">
+                            ${r.sources.map(s =>
+                                `<span class="source-tag">📄 ${s.source} | p.${s.page}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('queryResults').innerHTML = html;
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

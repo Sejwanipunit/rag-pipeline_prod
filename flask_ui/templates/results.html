@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Experiment Results — RAG Lab</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>📈 Experiment Comparison</h1>
+        <a href="/" class="btn-link">← Back to Lab</a>
+
+        {% if experiments %}
+        <div class="card">
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Chunking</th>
+                        <th>Retrieval</th>
+                        <th>Total Chunks</th>
+                        <th>Avg Chunk Size</th>
+                        <th>Avg Latency</th>
+                        <th>Total Time</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for exp in experiments %}
+                    <tr>
+                        <td><span class="badge">{{ exp.config.chunking_strategy }}</span></td>
+                        <td><span class="badge">{{ exp.config.retrieval_strategy }}</span></td>
+                        <td>{{ exp.config.total_chunks }}</td>
+                        <td>{{ exp.config.avg_chunk_size }} chars</td>
+                        <td>{{ exp.performance.avg_query_latency_seconds }}s</td>
+                        <td>{{ exp.performance.total_time_seconds }}s</td>
+                        <td>{{ exp.timestamp[:16] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% for exp in experiments %}
+        <div class="card">
+            <h2>{{ exp.config.chunking_strategy }} + {{ exp.config.retrieval_strategy }}</h2>
+            <p class="timestamp">{{ exp.timestamp[:16] }}</p>
+            {% for r in exp.results %}
+            <div class="query-result">
+                <div class="query-header">
+                    <span class="query-text">{{ r.query }}</span>
+                    <span class="latency">⏱ {{ r.latency_seconds }}s</span>
+                </div>
+                <div class="answer">{{ r.answer }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+
+        {% else %}
+        <div class="card">
+            <p>No experiments run yet. <a href="/">Run your first experiment →</a></p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
