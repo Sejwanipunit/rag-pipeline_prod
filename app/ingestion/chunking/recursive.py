@@ -23,7 +23,7 @@ def chunk_documents(documents: List[Document]) -> List[Document]:
     for i, chunk in enumerate(chunks):
         chunk.metadata["chunk_id"] = i  # Add chunk ID to metadata
         chunk.metadata["chunk_size"] = len(chunk.page_content)  # Add chunk size to metadata
-
+        chunk.metadata["strategy"] = "recursive"
     print(f"✅ Split {len(documents)} pages into {len(chunks)} chunks (chunk size: {settings.chunk_size}, overlap: {settings.chunk_overlap})")
     print(f"   - Average chunk size: {sum(len(c.page_content) for c in chunks) // len(chunks):.2f} characters")
     return chunks
